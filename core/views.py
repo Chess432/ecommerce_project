@@ -7,6 +7,7 @@ from .models import Item, OrderItem, Order
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.views.generic import ListView, DetailView, View
+from .forms import CheckoutForm
 
 
 def item_list(request):
@@ -16,11 +17,20 @@ def item_list(request):
     return render(request, "home.html", context)
 
 
-def checkout(request):
-    context = {
-        "Title": "Checkout"
-    }
-    return render(request, "checkout.html", context)
+class CheckoutView(View):
+    def get(self, *args, **kwargs):
+        form = CheckoutForm()
+        context = {
+            'form': form
+        }
+        return render(self.request, "checkout.html", context)
+
+    def post(self, *args, **kwargs):
+        form = CheckoutForm(self.request.POST or None)
+        if form.is_valid():
+            return redirect("core:checkout")
+        messages.warning(self.request, "Failed checkout!")
+        return redirect("core:checkout")
 
 
 def products(request):
